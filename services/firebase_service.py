@@ -1,8 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, firestore, auth, storage
 import os,json
-from dotenv import load_dotenv
-load_dotenv()
 firebase_creds = os.getenv("FIREBASE_CONFIG")
 
 if firebase_creds:
