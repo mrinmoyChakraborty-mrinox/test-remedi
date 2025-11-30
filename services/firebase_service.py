@@ -1,7 +1,7 @@
 import firebase_admin
 from firebase_admin import credentials, firestore, auth, storage
 import os,json
-firebase_creds = os.getenv("FIREBASE_CONFIG")
+firebase_creds = os.environ.get("FIREBASE_CONFIG")
 
 if firebase_creds:
     cred_dict = json.loads(firebase_creds)

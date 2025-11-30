@@ -17,7 +17,8 @@ const provider = new GoogleAuthProvider();
 const googleBtn = document.getElementById("google-login-btn");
 
 if (googleBtn) {
-  googleBtn.addEventListener("click", async () => {
+  googleBtn.addEventListener("click", async (e) => {
+    e.preventDefault(); 
     try {
       // 1) Google popup
       const result = await signInWithPopup(auth, provider);
