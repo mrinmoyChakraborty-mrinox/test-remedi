@@ -18,13 +18,14 @@ db = firestore.client()
 
 
 # --- User Functions ---
-def add_user(email, username):
+def add_user(email, username,photo):
     user_ref = db.collection("users").document(email)
     user_ref.set({
         "username": username,
         "email": email,
         "created_at": firestore.SERVER_TIMESTAMP,
         "hydration_enabled": False
+        "photo_url":photo
     })
 
 def get_user(email):
