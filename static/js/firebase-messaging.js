@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
+import { onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("enableNotif");
@@ -39,5 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     alert("Notifications enabled ✅");
+  });
+});
+
+onMessage(messaging, (payload) => {
+  new Notification(payload.notification.title, {
+    body: payload.notification.body,
+    icon: "/static/images/titleicon.png",
+    data: payload.data
   });
 });
