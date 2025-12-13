@@ -19,7 +19,7 @@
           {% if 'user' in session %}
           <li><a href="/dashboard">Dashboard</a></li>
           <li><a id="logout-btn" class="popupBtn" href="#">Log out</a></li>
-          
+          <li><a id="enableNotif" href="#">enable notification</a></li>
           <li><a href="/profile"><div class="hello-right">
         <div class="hello-profile" style="background-image: url('{{user.photo_url}}'); background-size: cover; background-position: right;"></div>
     </div></a></li>
@@ -40,5 +40,6 @@
     {% block content %}
     {% endblock %}
   <script src="{{ url_for('static', filename='js/base.js') }}"></script>
-  </body>
+  <script type="module" src="{{ url_for('static', filename='js/firebase-messaging.js') }}"></script> 
+</body>
 </html>

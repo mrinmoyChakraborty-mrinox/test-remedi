@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify, session, render_template, redirect, url_for, flash
 from services import firebase_service, upload
-from firebase_admin import auth
+from firebase_admin import auth, messaging
 import os
 from werkzeug.utils import secure_filename
+from datetime import datetime
+import pytz
+import threading
+
 # Initialize Flask
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # change this before deployment
@@ -154,6 +158,7 @@ def get_firebase_config():
         "storageBucket": os.environ.get("FIREBASE_STORAGE_BUCKET"),
         "messagingSenderId": os.environ.get("FIREBASE_MESSAGING_SENDER_ID"),
         "appId": os.environ.get("FIREBASE_APP_ID"),
+        "vapidKey": os.environ.get("FIREBASE_VAPID_KEY")
     }
     return jsonify(firebase_config)
 @app.route('/api/upload_image', methods=['POST'])
@@ -182,6 +187,106 @@ def logout():
     session.pop('user', None)
     return redirect('/')
 
+# ==========================================
+# 1. THE CRON TRIGGER (Fire and Forget)
+# ==========================================
+@app.route('/check_reminders', methods=['GET'])
+def check_reminders_route():
+    # 1. Get India Time
+    ist = pytz.timezone('Asia/Kolkata')
+    now_str = datetime.now(ist).strftime('%H:%M') # e.g., "14:30"
+    
+    # 2. Start Background Thread
+    thread = threading.Thread(target=process_background_notifications, args=(now_str,))
+    thread.start()
+    
+    # 3. Respond Immediately
+    return f"Checking for {now_str} in background...", 200
+# ============================================
+# 2. BACKGROUND THREAD PROCESSING(MESSAGE PROCESSING)
+# ============================================
+def process_background_notifications(time_str):
+    print(f"🧵 Thread working on: {time_str}")
+    
+    try:
+        # Query Firestore
+        docs=firebase_service.get_schedules_by_time(time_str)
+        
+        # Optimization: Use Batch Sending!
+        # Sending 1 by 1 is slow. Sending 500 at a time is fast.
+        messages_to_send = []
+        
+        for doc in docs:
+            data = doc.to_dict()
+            msg = messaging.Message(
+                notification=messaging.Notification(
+                    title='Medicine Reminder',
+                    body=f"Time to take your {data['med_name']}"
+                ),
+                data={
+                    'med_id': doc.id,
+                    'user_id': data['user_id'],
+                    'click_action': 'FLUTTER_NOTIFICATION_CLICK'
+                },
+                token=data['token']
+            )
+            messages_to_send.append(msg)
 
+            # Firebase limit is 500 messages per batch
+            if len(messages_to_send) >= 500:
+                send_batch(messages_to_send)
+                messages_to_send = [] # Reset list
+
+        # Send remaining messages
+        if messages_to_send:
+            send_batch(messages_to_send)
+            
+        print(f"✅ Thread finished processing for {time_str}")
+        
+    except Exception as e:
+        print(f"❌ Error in background thread: {e}")
+
+def send_batch(messages):
+    try:
+        batch_response = messaging.send_each(messages)
+        print(f"Sent batch of {batch_response.success_count} messages.")
+    except Exception as e:
+        print(f"Batch send failed: {e}")
+#==============================
+
+@app.route("/save-fcm-token", methods=["POST"])
+def save_fcm_token():
+    if 'user' not in session:
+        return jsonify({"success": False, "error": "Unauthorized"}), 401
+
+    data = request.get_json()
+    token = data.get("token")
+    email = session['user']['email']
+
+    if not token:
+        return jsonify({"success": False, "error": "No token provided"}), 400
+
+    firebase_service.save_token(email, token)
+    return jsonify({"success": True})
+#  API for "Take Medicine"
+@app.route('/api/mark_taken', methods=['POST'])
+def mark_taken_api():
+    data = request.json
+    # CALL YOUR SERVICE
+    result = firebase_services.decrement_inventory(
+        user_id=data['user_id'],
+        schedule_id=data['schedule_id']
+    )
+    return jsonify(result)
+@app.route('/notification-action')
+def notification_action_page():
+    # The HTML will read the URL parameters using JavaScript.
+    return render_template('notification_action.html')
+
+@app.route('/save_schedule', methods=['POST'])
+def save_schedule():
+    data=request.json()
+    result=firebase_service.save_schedule(data)
+    return result
 if __name__ == '__main__':
     app.run(debug=True)
