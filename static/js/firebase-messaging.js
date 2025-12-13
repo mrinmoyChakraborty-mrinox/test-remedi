@@ -44,9 +44,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 onMessage(messaging, (payload) => {
-  new Notification(payload.notification.title, {
-    body: payload.notification.body,
-    icon: "/static/images/titleicon.png",
-    data: payload.data
-  });
+  console.log("FOREGROUND MESSAGE:", payload);
+
+  if (Notification.permission === "granted") {
+    navigator.serviceWorker.ready.then((registration) => {
+      registration.showNotification(
+        payload.notification.title,
+        {
+          body: payload.notification.body,
+          icon: "/static/images/titleicon.png",
+          data: payload.data
+        }
+      );
+    });
+  }
 });
