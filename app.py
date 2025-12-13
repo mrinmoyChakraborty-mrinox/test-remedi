@@ -269,7 +269,7 @@ def process_background_notifications(time_str):
                         token=token
                     )
                 )
-                messages.append(msg)
+                
 
             # Firebase limit is 500 messages per batch
             if len(messages) >= 500:
