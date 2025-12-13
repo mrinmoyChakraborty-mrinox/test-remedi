@@ -8,10 +8,13 @@ async function fetchFirebaseConfig() {
 firebaseConfig = await fetchFirebaseConfig();
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
-
-document.getElementById("enableNotif").onclick = async (e) => {
+// Register service worker ONCE
+if ("serviceWorker" in navigator) {
+  await navigator.serviceWorker.register("/static/js/firebase-messaging-sw.js");
+}
+document.getElementById("enableNotif").addEventListener("click", async (e) => {
   e.preventDefault();
-  const permission = await requestPermission();
+  const permission = await Notification.requestPermission();
 
   if (permission !== "granted") {
     alert("Notifications blocked");
@@ -32,4 +35,4 @@ document.getElementById("enableNotif").onclick = async (e) => {
   });
 
   alert("Notifications enabled!");
-};
+});
