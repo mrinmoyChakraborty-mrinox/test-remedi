@@ -24,9 +24,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const app = initializeApp(firebaseConfig);
     const messaging = getMessaging(app);
 
-    // if ("serviceWorker" in navigator) {
-    //   await navigator.serviceWorker.register("/static/js/firebase-messaging-sw.js");
-    // }
+    if ("serviceWorker" in navigator) {
+        await navigator.serviceWorker.register("/static/firebase-messaging-sw.js");
+    }
 
     const token = await getToken(messaging, {
       vapidKey: firebaseConfig.vapidKey
