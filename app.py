@@ -253,10 +253,6 @@ def process_background_notifications(time_str):
             for token in tokens:
                 messages.append(
                     messaging.Message(
-                        notification=messaging.Notification(
-                            title="Medicine Reminder",
-                            body=f"Time to take {data['med_name']}"
-                        ),
                         data={
                         "schedule_id": doc.id,
                         "user_id": user_id,
