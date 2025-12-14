@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     let medicines = [];
-    let schedule = {};
     let chartInstance = null;
 
     const medicineListEl = document.getElementById('medicine-list');
@@ -9,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startDateEl = document.getElementById("summary-start-date");
     const endDateEl = document.getElementById("summary-end-date");
 
-    // ---------------- FETCH DATA (SINGLE SOURCE OF TRUTH) ----------------
+    // ---------------- FETCH DATA ----------------
     async function getConfirmationData() {
         const res = await fetch('/api/draft/load');
         const data = await res.json();
@@ -20,80 +19,89 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         medicines = data.draft.medicines || [];
-        schedule = data.draft.schedule || {};
     }
 
-    // ---------------- RENDER ----------------
+    // ---------------- RENDER MEDICINES WITH DROPDOWN ----------------
     function render() {
-            medicineListEl.innerHTML = "";
+        medicineListEl.innerHTML = "";
 
-            medicines.forEach((item, index) => {
-                const wrapper = document.createElement("div");
-                wrapper.className = "medicine-item";
+        medicines.forEach((item, index) => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "medicine-item";
 
-                wrapper.innerHTML = `
-                    <button class="medicine-header" type="button">
+            wrapper.innerHTML = `
+                <button class="medicine-header" type="button">
                     <div>
                         <div class="title">${item.medicine.name}</div>
                         <div class="subtitle">${item.medicine.dosage || ""}</div>
                     </div>
                     <div class="caret">▼</div>
-                    </button>
+                </button>
 
-                    <div class="medicine-details">
+                <div class="medicine-details">
                     <div><b>Start date:</b> ${item.schedule.start_date || "—"}</div>
                     <div><b>Duration:</b> ${item.schedule.duration_days} days</div>
                     <div><b>Days:</b> ${
-                        item.schedule.days.length
+                        item.schedule.days && item.schedule.days.length
                         ? item.schedule.days.join(", ")
                         : "—"
                     }</div>
                     <div><b>Time:</b> ${item.schedule.time || "—"}</div>
                     <div><b>Quantity per dose:</b> ${item.schedule.quantity_per_dose}</div>
                     <div><b>Total remaining:</b> ${item.medicine.quantity}</div>
-                    </div>
-                `;
+                    <div><b>Medium:</b> ${item.medicine.medium || "—"}</div>
+                    <div><b>Food preference:</b> ${item.medicine.food || "—"}</div>
+                    ${item.medicine.notes ? `<div><b>Notes:</b> ${item.medicine.notes}</div>` : ''}
+                </div>
+            `;
 
-                const header = wrapper.querySelector(".medicine-header");
-                const details = wrapper.querySelector(".medicine-details");
+            const header = wrapper.querySelector(".medicine-header");
+            const details = wrapper.querySelector(".medicine-details");
+            const caret = wrapper.querySelector(".caret");
 
-                header.addEventListener("click", e => {
-                    e.preventDefault();
-                    details.classList.toggle("open");
-                });
+            // Toggle dropdown on click
+            header.addEventListener("click", e => {
+                e.preventDefault();
+                const isOpen = details.classList.contains("open");
+                
+                // Toggle open class
+                details.classList.toggle("open");
+                wrapper.classList.toggle("open");
+                
+                // Rotate caret
+                caret.style.transform = isOpen ? "rotate(0deg)" : "rotate(180deg)";
+            });
 
-                medicineListEl.appendChild(wrapper);
-                });
-            }
+            medicineListEl.appendChild(wrapper);
+        });
+    }
     
-/* -----------------------------
-     SUMMARY CALCULATION
-  ----------------------------- */
-   function renderSummary() {
-            totalMedEl.innerText = medicines.length;
+    // ---------------- SUMMARY CALCULATION ----------------
+    function renderSummary() {
+        totalMedEl.innerText = medicines.length;
 
-            // total reminders per day = sum of quantity_per_dose
-            const totalPerDay = medicines.reduce(
+        // Total reminders per day = sum of quantity_per_dose
+        const totalPerDay = medicines.reduce(
             (sum, m) => sum + (m.schedule.quantity_per_dose || 0),
             0
-            );
-            remindersDayEl.innerText = totalPerDay;
+        );
+        remindersDayEl.innerText = totalPerDay;
 
-            // start date = earliest start
-            const startDates = medicines
+        // Start date = earliest start
+        const startDates = medicines
             .map(m => m.schedule.start_date)
             .filter(Boolean)
             .map(d => new Date(d));
 
-            if (startDates.length) {
+        if (startDates.length) {
             const minStart = new Date(Math.min(...startDates));
             startDateEl.innerText = minStart.toLocaleDateString();
-            } else {
+        } else {
             startDateEl.innerText = "Not set";
-            }
+        }
 
-            // end date = max(start + duration)
-            const endDates = medicines
+        // End date = max(start + duration)
+        const endDates = medicines
             .filter(m => m.schedule.start_date && m.schedule.duration_days)
             .map(m => {
                 const d = new Date(m.schedule.start_date);
@@ -101,42 +109,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 return d;
             });
 
-            if (endDates.length) {
+        if (endDates.length) {
             const maxEnd = new Date(Math.max(...endDates));
             endDateEl.innerText = maxEnd.toLocaleDateString();
-            } else {
+        } else {
             endDateEl.innerText = "Not set";
-            }
         }
-    // ---------------- CHART (UNCHANGED) ----------------
-    function renderDonutChart() {
-        const ctx = document.getElementById('medicine-donut-chart')?.getContext('2d');
-        if (!ctx) return;
+    }
 
-        if (chartInstance) chartInstance.destroy();
+    // ---------------- DONUT CHART ----------------
+    function renderDonutChart() {
+        const canvas = document.getElementById('medicine-donut-chart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+
+        if (chartInstance) {
+            chartInstance.destroy();
+        }
 
         chartInstance = new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: medicines.map(m => m.medicine.name),
                 datasets: [{
-                data: medicines.map(() => 1),
-                backgroundColor: [
-                    '#4c8bfd',
-                    '#22c55e',
-                    '#f97316',
-                    '#a855f7',
-                    '#ef4444'
-                ]
+                    data: medicines.map(() => 1),
+                    backgroundColor: [
+                        '#4c8bfd',
+                        '#22c55e',
+                        '#f97316',
+                        '#a855f7',
+                        '#ef4444',
+                        '#14b8a6'
+                    ]
                 }]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 1.5,
                 plugins: {
-                legend: { position: 'bottom' }
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 10,
+                            font: {
+                                size: 11
+                            }
+                        }
+                    }
                 }
             }
-            });
-
+        });
     }
 
     // ---------------- ACTIONS ----------------
@@ -150,12 +174,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.location.href = '/dashboard';
     }
+
     async function saveDraftOnly() {
-        await fetch("/api/draft/save", { method: "POST" });
-        alert("Draft saved");
+        await fetch("/api/draft/save", { 
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ medicines })
+        });
+        alert("Draft saved successfully!");
     }
+
     function goBack() {
-        window.location.href = '/add_medicine';
+        window.location.href = '/addmedicine';
     }
 
     // ---------------- INIT ----------------
@@ -164,11 +194,11 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
         renderSummary();
         renderDonutChart();
+        
         document.getElementById("save-draft-btn")?.addEventListener("click", saveDraftOnly);
         document.getElementById('back-btn')?.addEventListener('click', goBack);
         document.getElementById('activate-btn')?.addEventListener('click', activateSchedule);
     }
-    
 
     init();
 });
