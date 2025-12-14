@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 
-{% block styles %}
-    {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/confirmation_v2.css') }}">
-{% endblock %}
+
 
 {% block content %}
 <div class="conf-container">
@@ -50,12 +48,12 @@
         </section>
     </main>
 </div>
+<script src="{{ url_for('static', filename='js/confirmation.js') }}"></script>
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-    <script src="{{ url_for('static', filename='js/confirmation.js') }}"></script>
     <style>
 .conf-footer {
     display: flex;
