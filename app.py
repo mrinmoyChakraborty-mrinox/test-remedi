@@ -384,10 +384,10 @@ def activate():
     data = draft_doc.to_dict()["data"]
 
     # 1️⃣ Save medicine
-    medicine_id = save_medicine(user_id, data["medicine"])
+    medicine_id = firebase_service.save_medicine(user_id, data["medicine"])
 
     # 2️⃣ Save schedule (linked)
-    save_schedule(user_id, medicine_id, data["schedule"])
+    firebase_service.save_schedule(user_id, medicine_id, data["schedule"])
 
     # 3️⃣ Clear draft
     firebase_service.delete_draft(user_id)
@@ -400,7 +400,7 @@ def confirmation_data():
     if not user_id:
         return jsonify({"error": "Not logged in"}), 401
 
-    return jsonify(get_confirmation_data(user_id))
+    return jsonify(firebase_service.get_confirmation_data(user_id))
 
 
 
