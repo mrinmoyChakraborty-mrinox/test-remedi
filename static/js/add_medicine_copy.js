@@ -9,34 +9,43 @@ document.addEventListener("DOMContentLoaded", () => {
   // Collect ALL medicines
   // ----------------------------
   function collectMedicines() {
-    return Array.from(document.querySelectorAll(".medicine-card")).map(card => {
-      const q = sel => card.querySelector(sel);
+      return Array.from(document.querySelectorAll(".medicine-card")).map(card => {
+        const q = sel => card.querySelector(sel);
 
-      return {
-        medicine: {
-          name: q('[name$="[name]"]')?.value || "",
-          dosage: q('[name$="[dosage]"]')?.value || "",
-          quantity: Number(q('[name$="[quantity]"]')?.value || 0),
-          medium: q('[name$="[medium]"]:checked')?.value || "",
-          food: q('[name$="[food]"]:checked')?.value || "",
-          notes: q('[name$="[notes]"]')?.value || ""
-        },
-        schedule: {
-          start_date: q('[name$="[schedule][start_date]"]')?.value || null,
-          duration_days: Number(q('[name$="[schedule][duration]"]')?.value || 0),
-          days: JSON.parse(
-            q('[name$="[schedule][days]"]')?.value || "[]"
-          ),
-          time: q('[name$="[schedule][time]"]')?.value || null,
-          quantity_per_dose: Number(
-            q('[name$="[schedule][quantity_per_dose]"]')?.value || 1
-          ),
-          reminder_enabled:
-            q('[name$="[schedule][reminder]"]')?.checked ?? true,
-          snooze_minutes: 10
-        }
-      };
-    });
+        return {
+          medicine: {
+            name: q('[name$="[name]"]')?.value || "",
+            dosage: q('[name$="[dosage]"]')?.value || "",
+            quantity: Number(q('[name$="[quantity]"]')?.value || 0),
+
+            medium: q('[name$="[medium]"]:checked')?.value || "",
+            food: q('[name$="[food]"]:checked')?.value || "",
+            notes: q('[name$="[notes]"]')?.value || ""
+          },
+
+          schedule: {
+            start_date: q('[name$="[schedule][start_date]"]')?.value || null,
+            duration_days: Number(
+              q('[name$="[schedule][duration]"]')?.value || 0
+            ),
+
+            days: JSON.parse(
+              q('[name$="[schedule][days]"]')?.value || "[]"
+            ),
+
+            time: q('[name$="[schedule][time]"]')?.value || null,
+
+            quantity_per_dose: Number(
+              q('[name$="[schedule][quantity_per_dose]"]')?.value || 1
+            ),
+
+            reminder_enabled:
+              q('[name$="[schedule][reminder]"]')?.checked ?? true,
+
+            snooze_minutes: 10
+          }
+        };
+      });
 }
 
 
