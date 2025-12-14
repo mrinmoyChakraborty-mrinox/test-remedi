@@ -145,3 +145,16 @@ document.addEventListener("click", e => {
 document.addEventListener("DOMContentLoaded", async () => {
   await loadMedicineDraft();
 });
+// ---------- NEXT BUTTON (Add Medicine → Schedule) ----------
+document.addEventListener("DOMContentLoaded", () => {
+  const nextBtn = document.getElementById("nextBtnMed");
+  if (!nextBtn) return;
+
+  nextBtn.addEventListener("click", async () => {
+    // ensure latest draft is saved
+    await saveMedicineDraft();
+
+    // move to schedule page
+    window.location.href = "/schedule";
+  });
+});

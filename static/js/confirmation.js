@@ -94,7 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.location.href = '/dashboard';
     }
-
+    async function saveDraftOnly() {
+        await fetch("/api/draft/save", { method: "POST" });
+        alert("Draft saved");
+    }
     function goBack() {
         window.location.href = '/schedule';
     }
@@ -103,10 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
     async function init() {
         await getConfirmationData();
         render();
-
+        document.getElementById("save-draft-btn")?.addEventListener("click", saveDraftOnly);
         document.getElementById('back-btn')?.addEventListener('click', goBack);
         document.getElementById('activate-btn')?.addEventListener('click', activateSchedule);
     }
+    
 
     init();
 });
