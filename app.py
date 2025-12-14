@@ -374,20 +374,23 @@ def load_draft():
 @app.route("/api/activate", methods=["POST"])
 def activate():
     user_id = session['user']['email']
-    if not user_id:
-        return {"error": "Not logged in"}, 401
 
     draft_doc = firebase_service.get_draft(user_id)
     if not draft_doc.exists:
         return {"error": "No draft found"}, 400
 
     data = draft_doc.to_dict()["data"]
+    items=data['medicines']
+    for item in items:
+        # 1️⃣ Save medicine
+        med_id = firebase_service.save_medicine(user_id, item["medicine"])
 
-    # 1️⃣ Save medicine
-    medicine_id = firebase_service.save_medicine(user_id, data["medicine"])
-
-    # 2️⃣ Save schedule (linked)
-    firebase_service.save_schedule(user_id, medicine_id, data["schedule"])
+        # 2️⃣ Save schedule (linked)
+        firebase_service.save_schedule(
+            user_id=user_id,
+            medicine_id=med_id,
+            schedule_data=item["schedule"]
+        )
 
     # 3️⃣ Clear draft
     firebase_service.delete_draft(user_id)

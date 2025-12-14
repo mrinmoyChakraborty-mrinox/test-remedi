@@ -15,55 +15,49 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        medicines = data.draft.medicine?.medicines || [];
+        medicines = data.draft.medicines || [];
         schedule = data.draft.schedule || {};
     }
 
     // ---------------- RENDER ----------------
     function render() {
-        if (medicines.length === 0) {
-            medicineListEl.innerHTML = '<p>No medicines yet.</p>';
-            return;
-        }
+            medicineListEl.innerHTML = "";
 
-        medicineListEl.innerHTML = '';
-        medicines.forEach((med, index) => {
-            const item = document.createElement('div');
-            item.className = 'medicine-item';
+            medicines.forEach(med => {
+                const item = document.createElement("div");
+                item.className = "medicine-item";
 
-            item.innerHTML = `
+                item.innerHTML = `
                 <button class="medicine-header">
                     <div>
-                        <div class="title">${med.name}</div>
-                        <div class="subtitle">${med.dosage || ''} • ${med.medium || ''}</div>
+                    <div class="title">${med.medicine.name}</div>
+                    <div class="subtitle">${med.medicine.dosage || ""}</div>
                     </div>
                     <div class="caret">▼</div>
                 </button>
 
                 <div class="medicine-details">
-                    <div class="detail-grid">
-                        <div><strong>Start Date</strong> ${schedule.start_date || 'Not set'}</div>
-                        <div><strong>Duration</strong> ${schedule.custom_days || schedule.preset_days || 'Not set'} days</div>
-                        <div><strong>Repeat</strong> ${(schedule.days || []).join(', ') || 'Daily'}</div>
-                        <div><strong>Time</strong> ${schedule.time || 'Not set'}</div>
-                        <div><strong>Reminders</strong> ${schedule.reminder_enabled ? 'On' : 'Off'}</div>
-                        <div><strong>Snooze</strong> ${schedule.snooze_minutes || 10} min</div>
-                    </div>
+                    <div><b>Start:</b> ${med.schedule.start_date}</div>
+                    <div><b>Duration:</b> ${med.schedule.duration_days} days</div>
+                    <div><b>Days:</b> ${med.schedule.days.join(", ")}</div>
+                    <div><b>Time:</b> ${med.schedule.time}</div>
+                    <div><b>Quantity:</b> ${med.schedule.total_quantity}</div>
                 </div>
-            `;
+                `;
 
-            const header = item.querySelector('.medicine-header');
-            const details = item.querySelector('.medicine-details');
+                const header = item.querySelector(".medicine-header");
+                const details = item.querySelector(".medicine-details");
 
-            header.addEventListener('click', () => {
-                details.classList.toggle('open');
+                header.addEventListener("click", () => {
+                details.classList.toggle("open");
+                });
+
+                medicineListEl.appendChild(item);
             });
 
-            medicineListEl.appendChild(item);
-        });
-
-        renderDonutChart();
+  renderDonutChart();
     }
+    
 
     // ---------------- CHART (UNCHANGED) ----------------
     function renderDonutChart() {
@@ -75,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chartInstance = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: medicines.map(m => m.name),
+                labels: medicines.map(m => m.medicine.name),
                 datasets: [{
                     data: medicines.map(() => 1),
                 }]

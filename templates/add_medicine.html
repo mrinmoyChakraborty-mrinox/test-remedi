@@ -3,7 +3,8 @@
 
 {% block content %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/autosave.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/add_medicine.css') }}">
+<link rel="stylesheet" href="/static/css/add_medicine.css">
+<link rel="stylesheet" href="/static/css/components.css">
 <div class="add-med-container">
 
   <!-- Header -->
@@ -168,6 +169,38 @@
           <div class="manual-save-wrapper">
             <button type="button" class="manual-save-btn">Save</button>
           </div>
+
+          <hr class="divider">
+
+          <h4 class="schedule-title">⏰ Schedule</h4>
+
+          <label>Start Date</label>
+          <input type="date" name="med[0][schedule][start_date]">
+
+          <label>Duration (days)</label>
+          <input type="number" name="med[0][schedule][duration]" min="1">
+
+          <label>Total Quantity</label>
+          <input type="number" name="med[0][schedule][total_quantity]" min="1">
+
+          <label>Days of Week</label>
+          <div class="days-of-week">
+            <button type="button" class="day" data-day="mon">M</button>
+            <button type="button" class="day" data-day="tue">T</button>
+            <button type="button" class="day" data-day="wed">W</button>
+            <button type="button" class="day" data-day="thu">T</button>
+            <button type="button" class="day" data-day="fri">F</button>
+            <button type="button" class="day" data-day="sat">S</button>
+            <button type="button" class="day" data-day="sun">S</button>
+          </div>
+
+          <input type="hidden" name="med[0][schedule][days]">
+
+          <label>Time (IST)</label>
+          <input type="time" name="med[0][schedule][time]">
+
+          <label>Reminder</label>
+          <input type="checkbox" name="med[0][schedule][reminder]" checked>
 
         </div> <!-- card-body -->
 

@@ -1,203 +1,124 @@
-/* Add Medicine Page */
+/* ===============================
+   ADD MEDICINE PAGE ONLY
+   =============================== */
+
 .add-med-container {
-    max-width: 800px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .page-head {
-    text-align: center;
-    margin-bottom: 2rem;
+  text-align: center;
+  margin-bottom: 2rem;
 }
 
 .page-title--cobalt {
-    color: #0047ab; /* Cobalt Blue */
+  color: #0047ab;
 }
 
-.autosave-banner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: #e8f0fe;
-    padding: 0.75rem;
-    border-radius: 4px;
-    margin-bottom: 2rem;
-}
-
+/* ---------- Medicine Card ---------- */
 .medicine-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.medicine-card.collapsed .card-body {
+  display: none;
 }
 
 .medicine-card__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  cursor: pointer;
 }
 
 .medicine-card__title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .medicine-card__actions {
-    display: flex;
-    gap: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+/* ---------- Form ---------- */
+.card-body {
+  padding: 1.5rem;
 }
 
 .card-body label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
-.medicine-name-label { color: #0B6623; }
-.dosage-label { color: #2ECC71; }
-.medium-of-intake-label { color: #3C6E47; }
-.quantity-label { color: #33CC33; }
-.when-taken-label { color: #2E8B57; }
-.time-of-day-label { color: #6B8E23; }
-
-.card-body label[for*="name"] {
-    color: lightgreen;
+.card-body input,
+.card-body textarea,
+.card-body select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 1rem;
 }
 
-.card-body .medium-group {
-    margin-top: 2rem;
-}
-
-.card-body input[type="text"],
-.card-body input[type="number"],
-.card-body textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-}
-
-.card-body input[name*="dosage"] {
-    margin-bottom: 3rem; /* Increased gap */
-}
-
+/* ---------- Medium / Meal ---------- */
 .medium-group,
-.meal-group,
-.tod-pics {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-    justify-content: space-between;
+.meal-group {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
 
 .medium-option,
-.meal-option,
-.tod-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.time-input-container {
-    margin-top: 8px;
-}
-
-.time-input-container input {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 4px;
-    width: 100px; /* Adjust width as needed */
+.meal-option {
+  flex: 1;
+  text-align: center;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .medium-option.selected,
-.meal-option input:checked + .meal-card,
-.tod-item input:checked + img + .tod-label {
-    border-color: #4c8bfd;
-    box-shadow: 0 0 5px rgba(76, 139, 253, 0.5);
+.meal-option input:checked + .meal-card {
+  border-color: #4c8bfd;
+  box-shadow: 0 0 6px rgba(76, 139, 253, 0.3);
 }
 
-.manual-save-wrapper {
-    text-align: center;
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #eee;
-}
-
-.manual-save-btn {
-    display: none; /* Hidden by default, controlled by JS */
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-.manual-save-btn:hover {
-    background-color: #0056b3;
-}
-
-.colour-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 1rem;
-}
-
-.colour-dot {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-}
-
-.colour-dot.selected {
-    border-color: #000;
-}
-
+/* ---------- Bottom Buttons ---------- */
 .bottom-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
-}
-
-.add-btn {
-    background-color: #f0f0f0;
-    color: #333;
-    border: 1px solid #ccc;
-}
-
-.next-btn {
-    background-color: #28a745;
-    color: white;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
 }
 
 .add-btn,
 .next-btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
 }
 
-.meal-icon, .tod-item img {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
+.add-btn {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+}
+
+.next-btn {
+  background: #28a745;
+  color: white;
+  border: none;
 }

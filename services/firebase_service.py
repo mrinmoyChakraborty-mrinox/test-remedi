@@ -130,59 +130,38 @@ def delete_draft(user_id):
 # ---------------------------
 # SAVE MEDICINE
 # ---------------------------
-def save_medicine(user_id, medicine_data):
-    doc_ref = db.collection("medicines").document()
-    doc_ref.set({
-        "user_id": user_id,
-        "name": medicine_data["name"],
-        "dosage": medicine_data.get("dosage"),
-        "notes": medicine_data.get("notes"),
+def save_medicine(user_id, medicine):
+    ref = db.collection("users").document(user_id).collection("medicines").document()
+    ref.set({
+        **medicine,
+        "created_at": firestore.SERVER_TIMESTAMP
     })
-    return doc_ref.id
+    return ref.id
+
 
 
 # ---------------------------
 # SAVE SCHEDULE
 # ---------------------------
-def save_schedule(user_id, schedule_data):
-    doc_ref = db.collection("schedules").document()
-    doc_ref.set({
-        "user_id": user_id,
-
-        # Pill pack / duration
-        "preset_days": schedule_data.get("preset_days"),
-        "custom_days": schedule_data.get("custom_days"),
-        "total_quantity": schedule_data.get("total_quantity"),
-        "start_date": schedule_data.get("start_date"),
-
-        # Weekly & timing
-        "days": schedule_data.get("days", []),              # [] = daily
-        "time": schedule_data["time"],                      # IST HH:MM
-        "frequency": schedule_data["frequency"],
-        "every_x_hours": schedule_data.get("every_x_hours"),
-
-        # Reminder prefs
-        "reminder_enabled": schedule_data.get("reminder_enabled", True),
-        "snooze_minutes": schedule_data.get("snooze_minutes", 10),
-        "notification_type": schedule_data.get("notification_type", "push"),
-
-        # System flags
+def save_schedule(user_id, medicine_id, schedule_data):
+    db.collection("users").document(user_id).collection("schedules").add({
+        "medicine_id": medicine_id,
+        **schedule_data,
         "is_active": True,
         "created_at": firestore.SERVER_TIMESTAMP
     })
 
-    return doc_ref.id
 
 # ---------------------------
 # FETCH CONFIRMATION DATA
 # ---------------------------
 def get_confirmation_data(user_id):
-    meds = db.collection("medicines").where("user_id", "==", user_id).stream()
-    schedules = db.collection("schedules").where("user_id", "==", user_id).stream()
+    meds = db.collection("users").document(user_id).collection("medicines").stream()
+    schedules = db.collection("users").document(user_id).collection("schedules").stream()
 
     return {
-        "medicines": [m.to_dict() | {"id": m.id} for m in meds],
-        "schedules": [s.to_dict() | {"id": s.id} for s in schedules],
+        "medicines": [{**m.to_dict(), "id": m.id} for m in meds],
+        "schedules": [{**s.to_dict(), "id": s.id} for s in schedules],
     }
 
 def decrement_inventory_and_log(user_id, schedule_id):

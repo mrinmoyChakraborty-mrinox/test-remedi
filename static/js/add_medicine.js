@@ -159,3 +159,52 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "/schedule";
   });
 });
+document.addEventListener("click", e => {
+  if (!e.target.classList.contains("day")) return;
+
+  const card = e.target.closest(".medicine-card");
+  e.target.classList.toggle("selected");
+
+  const days = Array.from(
+    card.querySelectorAll(".day.selected")
+  ).map(d => d.dataset.day);
+
+  card.querySelector(
+    'input[name*="[schedule][days]"]'
+  ).value = JSON.stringify(days);
+});
+addBtn.addEventListener("click", () => {
+  document.querySelectorAll(".medicine-card").forEach(card => {
+    card.classList.add("collapsed");
+    card.querySelector(".card-body").style.display = "none";
+  });
+
+  const index = document.querySelectorAll(".medicine-card").length;
+  const template = document.querySelector(".medicine-card");
+  const clone = template.cloneNode(true);
+
+  clone.dataset.index = index;
+  clone.querySelector("h3").innerText = `Medicine ${index + 1}`;
+  clone.classList.remove("collapsed");
+  clone.querySelector(".card-body").style.display = "block";
+
+  clone.querySelectorAll("input, textarea").forEach(el => {
+    el.value = "";
+    el.name = el.name.replace(/\[\d+\]/, `[${index}]`);
+    if (el.type === "checkbox" || el.type === "radio") el.checked = false;
+  });
+
+  container.appendChild(clone);
+});
+container.addEventListener("click", e => {
+  const toggle = e.target.closest(".action-box--toggle");
+  if (!toggle) return;
+
+  const card = toggle.closest(".medicine-card");
+  const body = card.querySelector(".card-body");
+
+  const isOpen = body.style.display !== "none";
+  body.style.display = isOpen ? "none" : "block";
+  card.classList.toggle("collapsed", isOpen);
+});
+
