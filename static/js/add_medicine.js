@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 // ---------- NEXT BUTTON (Add Medicine → Schedule) ----------
 document.addEventListener("DOMContentLoaded", () => {
-  const nextBtn = document.getElementById("nextBtnMed");
+  const nextBtn = document.getElementById("nextBtn");
   if (!nextBtn) return;
 
   nextBtn.addEventListener("click", async () => {
