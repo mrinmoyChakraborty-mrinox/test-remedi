@@ -246,7 +246,18 @@ def get_schedules(user_id):
         print(f"Error getting schedules: {e}")
         return []
 
-
+def delete_schedule(user_id, schedule_id):
+    """
+    Deletes a schedule document
+    Note: This does NOT delete the medicine, only the schedule
+    """
+    try:
+        schedule_ref = db.collection('users').document(user_id).collection('schedules').document(schedule_id)
+        schedule_ref.delete()
+        return True
+    except Exception as e:
+        print(f"Error deleting schedule {schedule_id}: {e}")
+        return False
 def get_schedules_by_time(time_str):
     docs = db.collection_group('schedules').where('time', '==', time_str).stream()
     return docs

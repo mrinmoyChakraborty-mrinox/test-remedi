@@ -392,7 +392,14 @@ def view_schedules():
         return redirect(url_for('getstarted'))
     return render_template("view_schedules.html", user=session['user'])
 
+@app.route('/api/schedules/delete/<schedule_id>', methods=['DELETE'])
+def delete_schedule(schedule_id):
+    if 'user' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
 
+    user_id = session['user']['email']
+    firebase_service.delete_schedule(user_id, schedule_id)
+    return jsonify({"status": "success"})
 
 @app.route("/api/activate", methods=["POST"])
 def activate():
