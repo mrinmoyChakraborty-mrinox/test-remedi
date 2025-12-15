@@ -1,6 +1,36 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js";
 
+let messaging = null;
+
+async function initFirebaseMessaging() {
+  const res = await fetch("/api/get_firebase_config");
+  const config = await res.json();
+
+  const app = initializeApp(config);
+  messaging = getMessaging(app);
+
+  // 🔔 FOREGROUND HANDLER
+  onMessage(messaging, async (payload) => {
+    console.log("🔔 FOREGROUND MESSAGE:", payload);
+
+    const reg = await navigator.serviceWorker.ready;
+
+    await reg.showNotification("Medicine Reminder", {
+      body: `Time to take ${payload.data.med_name} ${payload.data.food ? ' (' + payload.data.food + ')' : ''}`,
+      icon: "/static/images/titleicon.png",
+      data: payload.data,
+      requireInteraction: true,
+      actions: [
+        { action: "mark_taken", title: "✅ Take Now" },
+        { action: "open_page", title: "👀 View Details" }
+      ]
+    });
+  });
+}
+
+initFirebaseMessaging();
+
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("enableNotif");
 
@@ -52,14 +82,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (saveRes.ok) {
         console.log("✅ FCM Token saved:", token);
-        
-        
-
+     
         alert("✅ Notifications enabled successfully!");
         window.location.reload();
       } else {
         throw new Error("Failed to save token");
-        window.location.reload();
       }
 
     } catch (error) {
@@ -69,23 +96,3 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-document.addEventListener("DOMContentLoaded", () => {
-// Set up foreground message handler
-        onMessage(messaging, (payload) => {
-          console.log("FOREGROUND MESSAGE:", payload);
-
-          navigator.serviceWorker.ready.then((reg) => {
-            reg.showNotification("Medicine Reminder", {
-              body: `Time to take ${payload.data.med_name} ${payload.data.food ? ' (' + payload.data.food + ')' : ''}`,
-              icon: "/static/images/titleicon.png",
-              badge: "/static/images/titleicon.png",
-              data: payload.data,
-              requireInteraction: true,
-              actions: [
-                { action: "taken", title: "Mark as Taken" },
-                { action: "skip", title: "Skip" }
-              ]
-            });
-          });
-        });
-  });        

@@ -301,7 +301,6 @@ def save_fcm_token():
         return jsonify({"success": False, "error": "Unauthorized"}), 401
 
     data = request.get_json()
-    print(data)
     token = data.get("token")
     email = session['user']['email']
 
