@@ -11,25 +11,46 @@ async function initFirebaseMessaging() {
   messaging = getMessaging(app);
 
   // 🔔 FOREGROUND HANDLER
-  onMessage(messaging, async (payload) => {
-    console.log("🔔 FOREGROUND MESSAGE:", payload);
+  onMessage(messaging, (payload) => {
+  console.log("🔔 FOREGROUND MESSAGE:", payload);
 
-    const reg = await navigator.serviceWorker.ready;
-
-    await reg.showNotification("Medicine Reminder", {
-      body: `Time to take ${payload.data.med_name} ${payload.data.food ? ' (' + payload.data.food + ')' : ''}`,
-      icon: "/static/images/titleicon.png",
-      data: payload.data,
-      requireInteraction: true,
-      actions: [
-        { action: "mark_taken", title: "✅ Take Now" },
-        { action: "open_page", title: "👀 View Details" }
-      ]
-    });
+    showToast(
+      `💊 Time to take ${payload.data.med_name}`,
+      payload.data
+    );
   });
+
 }
 
+
 initFirebaseMessaging();
+function showToast(message, payload) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+
+  toast.textContent = message;
+  toast.classList.remove("hidden");
+  toast.classList.add("show");
+
+  // ✅ Redirect to your existing page
+  toast.onclick = () => {
+    const params = new URLSearchParams({
+      schedule_id: payload.schedule_id,
+      user_id: payload.user_id,
+      med_name: payload.med_name,
+      food: payload.food || ""
+    });
+
+    window.location.href = `/notification-action?${params.toString()}`;
+  };
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+    toast.classList.add("hidden");
+    toast.onclick = null;
+  }, 4000);
+}
+
 
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("enableNotif");

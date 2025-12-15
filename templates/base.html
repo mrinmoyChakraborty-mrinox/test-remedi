@@ -58,7 +58,8 @@
   
   {% block content %}
   {% endblock %}
-  
+  <div id="toast" class="toast hidden"></div>
+
   <script src="{{ url_for('static', filename='js/base.js') }}"></script>
   <script src="/firebase-config.js"></script>
   <script type="module" src="{{ url_for('static', filename='js/firebase-messaging.js') }}"></script>
