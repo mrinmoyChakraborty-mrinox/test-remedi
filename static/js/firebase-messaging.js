@@ -56,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
 
         alert("✅ Notifications enabled successfully!");
+        window.location.reload();
       } else {
         throw new Error("Failed to save token");
       }
