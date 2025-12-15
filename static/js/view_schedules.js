@@ -23,20 +23,20 @@ async function loadSchedules() {
 
             card.innerHTML = `
                 <div class="schedule-header">
-                    <strong>${schedule.med_name}</strong>
-                    <strong>${schedule.dosage}</strong>
+                    <strong>${schedule.med_name || '-'}</strong>
+                    <strong>${schedule.dosage || '-'}</strong>
                     <button onclick="toggleDetails('${schedule.id}')">▼</button>
                 </div>
 
                 <div class="schedule-details" id="details-${schedule.id}" style="display:none">
-                    <p><b>Time:</b> ${schedule.time}</p>
-                    <p><b>Days:</b> ${schedule.days.join(", ")}</p>
-                    <p><b>Start date:</b> ${schedule.start_date}</p>
-                    <p><b>Duration:</b> ${schedule.duration_days} days</p>
-                    <p><b>Quantity per dose:</b> ${schedule.quantity_per_dose}</p>
-                    <p><b>Total quantity:</b> ${schedule.quantity}</p>
-                    <p><b> Medium:</b> ${schedule.medium}</p>
-                    <p><b> Food preference:</b> ${schedule.food}</p>
+                    <p><b>Time:</b> ${schedule.time || '-'}</p>
+                    <p><b>Days:</b> ${schedule.days.join(", ") || '-'}</p>
+                    <p><b>Start date:</b> ${schedule.start_date || '-'}</p>
+                    <p><b>Duration:</b> ${schedule.duration_days || '-'} days</p>
+                    <p><b>Quantity per dose:</b> ${schedule.quantity_per_dose || '-'}</p>
+                    <p><b>Total quantity:</b> ${schedule.quantity || '-'}</p>
+                    <p><b> Medium:</b> ${schedule.medium || '-'}</p>
+                    <p><b> Food preference:</b> ${schedule.food || '-'}</p>
                     <button onclick="deleteSchedule('${schedule.id}')">
                         🗑 Delete
                     </button>
