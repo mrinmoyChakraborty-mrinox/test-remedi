@@ -386,6 +386,11 @@ def list_schedules():
         print(f"Error fetching schedules: {e}") 
         return jsonify({"error": "Failed to fetch schedules"}), 500   
 
+@app.route('/schedules')
+def view_schedules():
+    if 'user' not in session:
+        return redirect(url_for('getstarted'))
+    return render_template("view_schedules.html", user=session['user'])
 
 
 
