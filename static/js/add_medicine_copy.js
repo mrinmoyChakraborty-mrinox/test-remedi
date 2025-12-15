@@ -9,6 +9,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   let autoSaveEnabled = true;
   let saveTimeout = null;
+  let isLoadingDraft = false; // Flag to prevent auto-save during load
+
+  // Store the original template before any modifications
+  const originalTemplate = document.querySelector(".medicine-card").cloneNode(true);
 
   // ----------------------------
   // Load existing draft on page load
@@ -48,7 +52,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Save draft to backend
   // ----------------------------
   async function saveDraft() {
+    if (isLoadingDraft) {
+      console.log("⏸️ Skipping save during draft load");
+      return;
+    }
+
     const medicines = collectMedicines();
+
+    // Don't save if all medicines are empty
+    const hasData = medicines.some(m => 
+      m.medicine.name || 
+      m.medicine.dosage || 
+      m.medicine.quantity > 0
+    );
+
+    if (!hasData) {
+      console.log("⏸️ Skipping save - no data entered");
+      return;
+    }
 
     try {
       const response = await fetch("/api/draft/save", {
@@ -62,7 +83,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (autoSaveStatus) {
           autoSaveStatus.textContent = "Saved ✓";
           setTimeout(() => {
-            autoSaveStatus.textContent = "Saving automatically";
+            if (autoSaveEnabled) {
+              autoSaveStatus.textContent = "Saving automatically";
+            }
           }, 2000);
         }
       }
@@ -75,6 +98,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Load draft from backend
   // ----------------------------
   async function loadDraft() {
+    isLoadingDraft = true; // Prevent auto-save during load
+
     try {
       const res = await fetch("/api/draft/load");
       const data = await res.json();
@@ -89,9 +114,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         data.draft.medicines.forEach((item, index) => {
           renderMedicineCard(item, index);
         });
+      } else {
+        // No draft - keep the default card
+        console.log("ℹ️ No draft found - using empty form");
       }
     } catch (error) {
       console.error("Load draft failed:", error);
+    } finally {
+      // Re-enable auto-save after 1 second delay
+      setTimeout(() => {
+        isLoadingDraft = false;
+        console.log("✅ Draft loading complete - auto-save enabled");
+      }, 1000);
     }
   }
 
@@ -99,8 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Render a medicine card with data
   // ----------------------------
   function renderMedicineCard(data, index) {
-    const template = document.querySelector(".medicine-card");
-    const clone = template ? template.cloneNode(true) : createEmptyCard();
+    const clone = originalTemplate.cloneNode(true);
     
     clone.dataset.index = index;
     
@@ -113,9 +146,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Update all input names
     clone.querySelectorAll("input, textarea").forEach(el => {
-      el.name = el.name.replace(/\[(\d+)\]/, `[${index}]`);
+      if (el.name) {
+        el.name = el.name.replace(/\[0\]/, `[${index}]`);
+      }
       if (el.id) {
-        el.id = el.id.replace(/-(\d+)-/, `-${index}-`);
+        el.id = el.id.replace(/-0-/, `-${index}-`);
       }
     });
 
@@ -123,7 +158,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     clone.querySelectorAll("label[for]").forEach(label => {
       const forAttr = label.getAttribute("for");
       if (forAttr) {
-        label.setAttribute("for", forAttr.replace(/-(\d+)-/, `-${index}-`));
+        label.setAttribute("for", forAttr.replace(/-0-/, `-${index}-`));
       }
     });
 
@@ -187,7 +222,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Trigger auto-save on input changes
   container.addEventListener("input", () => {
-    if (!autoSaveEnabled) return;
+    if (!autoSaveEnabled || isLoadingDraft) return;
     
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
@@ -196,7 +231,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   container.addEventListener("change", () => {
-    if (!autoSaveEnabled) return;
+    if (!autoSaveEnabled || isLoadingDraft) return;
     saveDraft();
   });
 
@@ -205,6 +240,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ----------------------------
   container.addEventListener("click", (e) => {
     if (e.target.classList.contains("manual-save-btn")) {
+      isLoadingDraft = false; // Allow manual save
       saveDraft();
     }
   });
@@ -238,7 +274,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     btn.closest(".medicine-card").remove();
-    if (autoSaveEnabled) saveDraft();
+    if (autoSaveEnabled && !isLoadingDraft) saveDraft();
   });
 
   // ----------------------------
@@ -275,13 +311,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       daysInput.value = JSON.stringify(days);
     }
     
-    if (autoSaveEnabled) saveDraft();
+    if (autoSaveEnabled && !isLoadingDraft) saveDraft();
   });
 
   // ----------------------------
   // NEXT → Confirmation
   // ----------------------------
   nextBtn?.addEventListener("click", async () => {
+    isLoadingDraft = false; // Allow saving before navigation
     await saveDraft();
     window.location.href = "/confirmation";
   });
