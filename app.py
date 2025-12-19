@@ -515,9 +515,11 @@ def test_ocr_page():
 def removefcm():
     data = request.get_json()
     token = data.get("token")
-
-    firebase_service.remove_fcm_token(token)
-    return jsonify({"status": "removed"}),200
+    if token:
+        firebase_service.remove_fcm_token(token)
+        return jsonify({"status": "removed"}),200
+    else:
+        redirect('/logout')    
 
 if __name__ == '__main__':
     app.run(debug=True)
