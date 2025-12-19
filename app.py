@@ -517,7 +517,8 @@ def test_ocr_page():
 
 @app.route('/remove-fcm-token',methods=['GET','POST'])
 def removefcm():
-    data = request.get_json()
+    # silent=True prevents crashing if header is missing
+    data = request.get_json(silent=True) or {} 
     token = data.get("token")
     if token:
         firebase_service.remove_fcm_token(token)
