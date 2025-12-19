@@ -1,12 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Upload Prescription</title>
-    <link rel="stylesheet" href="vis2.css">
-</head>
-<body>
-
+{% extends "base.html" %}
+{% block title %}Upload Prescription{% endblock %}
+{% block content %}
+    <link rel="stylesheet" href="/static/css/upload_prescription.css">
     <div class="page-container">
 
         <div class="card">
@@ -16,29 +11,23 @@
             </div>
 
     <!-- Browse files option -->
-    <button class="browse-btn" onclick="browseImages()">Browse files</button>
+    <button class="browse-btn" onclick="openFilePicker()">Browse files</button>
 
     <p class="supported">*Supported files: jpg, jpeg, png, pdf
                          * the picture should be clear
     </p>
-
-    <!-- Image-only input -->
-    <input type="file" id="imageInput" accept=".jpg,.jpeg,.png" hidden>
-
+  
     <!-- Existing upload input (image + pdf) -->
     <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.pdf" hidden>
 
-    <button class="upload-btn" onclick="openFilePicker()">Upload</button>
+    <button class="upload-btn">Upload</button>
 
     <p id="fileName" class="file-name"></p>
-</div>
-
-
-            
+    </div>
+    
         <button class="confirm-btn" onclick="confirmUpload()">Confirm</button>
 
     </div>
 
-    <script src="vis2.js"></script>
-</body>
-</html>
+    <script src="/static/js/upload_prescription.js"></script>
+{% endblock %}

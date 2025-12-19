@@ -509,10 +509,39 @@ def fill_from_prescription():
         "redirect_url": "/addmedicine" # URL to your add_medicine page
     })
 
-@app.route('/test-ocr')
+@app.route('/upload-prescription')
 def test_ocr_page():
-    return render_template("test_ocr.html")
+    return render_template("upload_prescription.html",user=session['user'])
 
+@app.route('/api/upload_prescription', methods=['POST'])
+def upload_prescription():
+    file = request.files['file']
+    filename = secure_filename(file.filename)
+    
+    image_url = None
+
+    # 1. HANDLE PDF
+    if filename.lower().endswith('.pdf'):
+        # Convert PDF -> PIL
+        pil_image = upload.convert_pdf_to_pil(file)
+        
+        if pil_image:
+            # Change filename extension to .jpg
+            new_filename = filename.rsplit('.', 1)[0] + ".jpg"
+            # Upload using the new PIL function
+            image_url = upload.upload_pil_image(pil_image, new_filename)
+    
+    # 2. HANDLE STANDARD IMAGE
+    else:
+        # Standard upload
+        image_url = upload.upload_document(file, filename)
+
+    if not image_url:
+        return jsonify({"error": "Upload failed"}), 500
+
+    user_id = session['user']['email']
+    firebase_service.upload_prescription(user_id,image_url)
+    return jsonify({"status": "success"}), 200
 
 
 @app.route('/remove-fcm-token',methods=['GET','POST'])

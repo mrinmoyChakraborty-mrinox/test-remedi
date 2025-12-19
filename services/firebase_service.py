@@ -263,6 +263,14 @@ def get_schedules(user_id):
         print(f"Error getting schedules: {e}")
         return []
 
+#ADD PRESCRIPTION TO PROFILE
+def upload_prescription(user_id,image_url):
+    ref=db.collections('users').document(user_id).collection('prescriptions').document()
+    ref.set({
+        'image_url':image_url,
+        'uploaded_at':firestore.SERVER_TIMESTAMP
+    })
+
 def delete_schedule(user_id, schedule_id):
     
     try:
