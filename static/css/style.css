@@ -522,20 +522,6 @@ footer {
 .notification-bell.enabled {
     cursor: default; /* Make it look non-clickable when already active */
 }
-    .toast {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #333;
-  color: white;
-  padding: 14px 18px;
-  border-radius: 8px;
-  font-size: 14px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  z-index: 9999;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
 
 .toast.show {
   opacity: 1;
@@ -543,4 +529,37 @@ footer {
 
 .toast.hidden {
   display: none;
+}
+#toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 9999;
+}
+
+.toast {
+  background: #1f2937;
+  color: white;
+  padding: 14px 18px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.35);
+  max-width: 320px;
+  font-size: 14px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.toast:hover {
+  transform: scale(1.03);
+}
+
+.toast.refill {
+  border-left: 5px solid #f97316;
+}
+
+.toast.reminder {
+  border-left: 5px solid #22c55e;
 }
