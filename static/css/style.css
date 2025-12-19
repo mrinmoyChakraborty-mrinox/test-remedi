@@ -523,13 +523,6 @@ footer {
     cursor: default; /* Make it look non-clickable when already active */
 }
 
-.toast.show {
-  opacity: 1;
-}
-
-.toast.hidden {
-  display: none;
-}
 #toast-container {
   position: fixed;
   bottom: 20px;
