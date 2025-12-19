@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>View Prescriptions</title>
+    <link rel="stylesheet" href="pres3.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h2 class="title">View Prescriptions</h2>
+
+    <!-- Prescription 1 -->
+    <div class="dropdown">
+        <button class="dropdown-btn" onclick="togglePrescription(1)">
+            Prescription 1
+            <span class="arrow" id="arrow1">▼</span>
+        </button>
+
+        <div class="dropdown-content" id="content1">
+            <img id="img1" class="pres-img">
+            <p class="no-img" id="text1">No prescription uploaded</p>
+
+            <div class="actions">
+                <button onclick="deletePrescription(1)">Delete</button>
+                <button class="schedule" onclick="createSchedule(1)">
+                    Create schedule with this
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Prescription 2 -->
+    <div class="dropdown">
+        <button class="dropdown-btn" onclick="togglePrescription(2)">
+            Prescription 2
+            <span class="arrow" id="arrow2">▼</span>
+        </button>
+
+        <div class="dropdown-content" id="content2">
+            <img id="img2" class="pres-img">
+            <p class="no-img" id="text2">No prescription uploaded</p>
+
+            <div class="actions">
+                <button onclick="deletePrescription(2)">Delete</button>
+                <button class="schedule" onclick="createSchedule(2)">
+                    Create schedule with this
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="pres3.js"></script>
+</body>
+</html>
