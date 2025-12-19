@@ -246,43 +246,73 @@ def process_background_notifications(time_str,day):
         # Query Firestore
         firebase_service._user_token_cache.clear()
         docs=firebase_service.get_schedules_by_time(time_str,day)
-        
-        # Optimization: Use Batch Sending!
-        # Sending 1 by 1 is slow. Sending 500 at a time is fast.
         messages = []
+       
+            # Optimization: Use Batch Sending!
+            # Sending 1 by 1 is slow. Sending 500 at a time is fast.
+            
 
         for doc in docs:
-            data = doc.to_dict()
-            user_id = data["user_id"]
+                data = doc.to_dict()
+                user_id = data["user_id"]
 
-            tokens = firebase_service.get_user_tokens(user_id)
-            if not tokens:
-                continue
+                tokens = firebase_service.get_user_tokens(user_id)
+                if not tokens:
+                    continue
 
-            for token in tokens:
-                messages.append(
-                    messaging.Message(
-                        data={
-                        "schedule_id": doc.id,
-                        "user_id": user_id,
-                        "food": data.get("food",""),
-                        "med_name": data["med_name"],
-                        "med_id": data["medicine_id"],
-                        },
-                        token=token
+                for token in tokens:
+                    messages.append(
+                        messaging.Message(
+                            data={
+                            "schedule_id": doc.id,
+                            "user_id": user_id,
+                            "food": data.get("food",""),
+                            "med_name": data["med_name"],
+                            "med_id": data["medicine_id"],
+                            },
+                            token=token
+                        )
                     )
-                )
-                
+                    # Firebase limit is 500 messages per batch
+                    if len(messages) >= 500:
+                        send_batch(messages)
+                        messages = [] # Reset list
 
-            # Firebase limit is 500 messages per batch
-            if len(messages) >= 500:
-                send_batch(messages)
-                messages = [] # Reset list
+        
+        refill_docs=firebase_service.get_due_refill_notifications()
+        for doc in refill_docs:
+                data = doc.to_dict()
+                user_id = doc.reference.parent.parent.id
+
+                tokens = firebase_service.get_user_tokens(user_id)
+                if not tokens:
+                    continue
+
+                for token in tokens:
+                    messages.append(
+                        messaging.Message(
+                            data={
+                            "notification_type": "refill",
+                            "medicine_id": data["medicine_id"],
+                            "med_name": data["med_name"],
+                            "quantity": str(data.get("quantity","0")),
+                            },
+                            token=token
+                        )
+                    )
+                             
+
+                    # Firebase limit is 500 messages per batch
+                    if len(messages) >= 500:
+                        send_batch(messages)
+                        messages = [] # Reset list
+                doc.reference.update({"sent": True})         
 
         # Send remaining messages
         if messages:
             send_batch(messages)
             
+
         print(f"✅ Thread finished processing for {time_str}")
         
     except Exception as e:

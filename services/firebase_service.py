@@ -2,6 +2,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore, auth, storage
 import os,json
 from flask import jsonify
+from datetime import datetime, timedelta
+import pytz
 firebase_creds = os.environ.get("FIREBASE_CONFIG")
 
 if firebase_creds:
@@ -209,6 +211,16 @@ def run_inventory_transaction(transaction, med_ref, user_id,decrement_quantity,s
         new_qty = current_qty - decrement_quantity
         if new_qty < 0:
             new_qty = 0
+        # AFTER decrement
+        if new_qty == 0:
+            queue_refill_notification(
+                user_id=user_id,
+                quantity=new_qty,
+                medicine_id=med_ref.id,
+                med_name=med_name,
+                delay_minutes=10
+            )
+    
         transaction.update(med_ref, {'quantity': new_qty})
         
         # 4. LOG IT (Create a new document in 'logs')
@@ -289,7 +301,7 @@ def delete_prescription(user_id, pres_id):
         prescription_ref.delete()
     except Exception as e:
         print(f"Error deleting prescriptions for user {user_id}: {e}")
-              
+
 def delete_schedule(user_id, schedule_id):
     
     try:
@@ -319,3 +331,53 @@ def get_schedules_by_time(time_str,day):
             valid_docs.append(doc)
             
     return valid_docs
+def queue_refill_notification(user_id,quantity, medicine_id, med_name, delay_minutes=10):
+    ist = pytz.timezone("Asia/Kolkata")
+
+    # 1️⃣ Get IST now
+    ist_now = datetime.now(ist)
+
+    # 2️⃣ Add delay in IST
+    ist_send_time = ist_now + timedelta(minutes=delay_minutes)
+
+    # 3️⃣ Convert to UTC before storing
+    utc_send_time = ist_send_time.astimezone(pytz.utc)
+
+    queued_ref = (
+        db.collection("users")
+        .document(user_id)
+        .collection("queued_notifications")
+    )
+
+    # 🚫 Prevent duplicates
+    existing = (
+        queued_ref
+        .where("medicine_id", "==", medicine_id)
+        .where("type", "==", "refill")
+        .where("sent", "==", False)
+        .limit(1)
+        .stream()
+    )
+
+    if any(existing):
+        return
+
+    queued_ref.add({
+        "type": "refill",
+        "medicine_id": medicine_id,
+        "med_name": med_name,
+        "quantity": quantity,
+        "scheduled_at": utc_send_time,  # ✅ UTC STORED
+        "sent": False,
+        "created_at": firestore.SERVER_TIMESTAMP
+    })
+def get_due_refill_notifications():
+    now = datetime.utcnow()
+
+    return (
+        db.collection_group("queued_notifications")
+        .where("type", "==", "refill")
+        .where("sent", "==", False)
+        .where("scheduled_at", "<=", now)
+        .stream()
+    )
