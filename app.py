@@ -309,9 +309,12 @@ def save_fcm_token():
         return jsonify({"success": False, "error": "No token provided"}), 400
 
     firebase_service.save_token(email, token)
-    # ✅ store token presence in session
-    session['user']['fcm_enabled'] = True
-    session.modified = True
+    if 'user' in session:
+        # Create a copy, update it, and re-save it
+        updated_user = session['user']
+        updated_user['fcm_enabled'] = True
+        session['user'] = updated_user
+        session.modified = True # Tells Flask to save the cookie
     return jsonify({"success": True})
 #  API for "Take Medicine"
 @app.route('/api/mark_taken', methods=['POST'])
