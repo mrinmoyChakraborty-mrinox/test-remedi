@@ -74,8 +74,8 @@ def save_token(email, token):
     user_ref.update({
         "fcm_tokens": firestore.ArrayUnion([token])
     })
-def remove_fcm_token(token,user_id):
-    users_ref = db.collection("users").document(user_id)
+def remove_fcm_token(token):
+    users_ref = db.collection("users")
     query = users_ref.where("fcm_tokens", "array_contains", token).stream()
 
     for user_doc in query:
