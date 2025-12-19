@@ -29,7 +29,7 @@ async function loadSchedules() {
                 </div>
 
                 <div class="schedule-details" id="details-${schedule.id}" style="display:none">
-                    <p><b>Time:</b> ${schedule.time || '-'}</p>
+                    <p><b>Times:</b> ${schedule.tod_selection || '-'}</p>
                     <p><b>Days:</b> ${schedule.days.join(", ") || '-'}</p>
                     <p><b>Start date:</b> ${schedule.start_date || '-'}</p>
                     <p><b>Duration:</b> ${schedule.duration_days || '-'} days</p>

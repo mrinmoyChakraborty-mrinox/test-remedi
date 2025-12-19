@@ -442,6 +442,21 @@ def delete_prescription(pres_id):
     firebase_service.delete_prescription(user_id, pres_id)
     return jsonify({"status": "success"}),200
 
+@app.route("/refill-alert")
+def refill_alert_page():
+    if 'user' not in session:
+        return redirect('/getstarted')
+    return render_template("refill_alert.html", user=session['user'])
+@app.route("/api/refill_medicine", methods=["POST"])
+def refill_medicine():
+    user_id = session['user']['email']
+    data = request.json
+    firebase_service.refill_medicine(user_id,data)
+    
+
+    return jsonify({"status": "success"}),200
+
+
 @app.route("/api/activate", methods=["POST"])
 def activate():
     user_id = session['user']['email']

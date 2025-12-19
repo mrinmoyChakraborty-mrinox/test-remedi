@@ -12,50 +12,65 @@ async function initFirebaseMessaging() {
   messaging = getMessaging(app);
 
   // 🔔 FOREGROUND HANDLER
-  onMessage(messaging, (payload) => {
-  console.log("🔔 FOREGROUND MESSAGE:", payload);
-    // 🔊 play sound
-    notificationSound.currentTime = 0; // rewind if already played
-    notificationSound.play().catch(err => {
-      console.warn("Sound blocked:", err);
-    });
-    showToast(
-      `💊 Time to take ${payload.data.med_name} ${payload.data.food}`,
-      payload.data
-    );
-  });
+ onMessage(messaging, (payload) => {
+  console.log("🔔 MESSAGE:", payload);
 
+  notificationSound.currentTime = 0;
+  notificationSound.play().catch(() => {});
+
+  const type = payload.data.notification_type || "reminder";
+
+  if (type === "refill") {
+    showToast(
+      `🧾 Refill needed for ${payload.data.med_name}`,
+      payload.data,
+      "refill"
+    );
+  } else {
+    showToast(
+      `💊 Time to take ${payload.data.med_name}`,
+      payload.data,
+      "reminder"
+    );
+  }
+});
 }
 
 
 initFirebaseMessaging();
-function showToast(message, payload) {
-  const toast = document.getElementById("toast");
-  if (!toast) return;
+function showToast(message, payload, type) {
+  const container = document.getElementById("toast-container");
+  if (!container) return;
 
-  toast.textContent = message;
-  toast.classList.remove("hidden");
-  toast.classList.add("show");
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerText = message;
 
-  // ✅ Redirect to your existing page
   toast.onclick = () => {
-    const params = new URLSearchParams({
-      schedule_id: payload.schedule_id,
-      user_id: payload.user_id,
-      med_name: payload.med_name,
-      food: payload.food || ""
-    });
-    toast.classList.remove("show");
-    toast.classList.add("hidden")
-    window.open(`/notification-action?${params.toString()}`);
+    if (type === "refill") {
+      const params = new URLSearchParams({
+        medicine_id: payload.medicine_id,
+        med_name: payload.med_name,
+        remaining: payload.quantity || "0"
+      });
+      window.open(`/refill-alert?${params.toString()}`);
+    } else {
+      const params = new URLSearchParams({
+        schedule_id: payload.schedule_id,
+        user_id: payload.user_id,
+        med_name: payload.med_name,
+        food: payload.food || ""
+      });
+      window.open(`/notification-action?${params.toString()}`);
+    }
+
+    // ❌ DO NOT auto-remove other toasts
+    toast.remove(); // remove only the clicked one
   };
 
-  //setTimeout(() => {
-    //toast.classList.remove("show");
-    //toast.classList.add("hidden");
-    //toast.onclick = null;
-  //}, 10000);
+  container.appendChild(toast);
 }
+
 
 
 document.addEventListener("DOMContentLoaded", () => {

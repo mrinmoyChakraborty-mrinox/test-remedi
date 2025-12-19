@@ -381,3 +381,15 @@ def get_due_refill_notifications():
         .where("scheduled_at", "<=", now)
         .stream()
     )
+def refill_medicine(user_id, data):
+    med_ref = (
+        firebase_service.db
+        .collection("users")
+        .document(user_id)
+        .collection("medicines")
+        .document(data["medicine_id"])
+    )
+
+    med_ref.update({
+        "quantity": firestore.Increment(data["quantity"])
+    })
