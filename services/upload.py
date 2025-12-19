@@ -1,6 +1,7 @@
 from imagekitio import ImageKit
 import requests
 import os
+import io
 import base64
 import fitz  # PyMuPDF (pip install pymupdf)
 from PIL import Image
