@@ -3,7 +3,7 @@ import requests
 import os
 import base64
 # Configuration
-imagekit = ImageKit(private_key=os.environ.get('IMAGEKIT_PRIVATE_KEY'),url_endpoint=os.environ.get('IMAGEKIT_URL_ENDPOINT'))
+imagekit = ImageKit(private_key=os.environ.get('IMAGEKIT_PRIVATE_KEY'))
 def upload_document(file, file_name):
      try:
         
