@@ -315,7 +315,7 @@ def save_fcm_token():
         updated_user['fcm_enabled'] = True
         session['user'] = updated_user
         session.modified = True # Tells Flask to save the cookie
-        print(session['user'])
+        
     return jsonify({"success": True})
 #  API for "Take Medicine"
 @app.route('/api/mark_taken', methods=['POST'])
