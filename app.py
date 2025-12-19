@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, session, render_template, redirect, url_for, flash, Response , send_from_directory
 from services import firebase_service, upload
 from firebase_admin import auth, messaging
+import ocr_test
 import os
 from werkzeug.utils import secure_filename
 from datetime import datetime,timedelta
@@ -434,8 +435,79 @@ def confirmation_data():
     return jsonify(firebase_service.get_confirmation_data(user_id))
 
 
+@app.route('/api/fill_from_prescription', methods=['POST'])
+def fill_from_prescription():
+    # 1. Get URL from the frontend request
+    data = request.json
+    image_url = data.get('image_url')
 
+    if not image_url:
+        return jsonify({"error": "No URL provided"}), 400
 
+    # 2. Run the functional OCR script
+    extracted_data = ocr_test.extract_medicines(image_url)
+
+    if not extracted_data:
+        return jsonify({"error": "Could not read prescription"}), 500
+
+    # 3. TRANSFORM Data to match 'add_medicine_copy.js' structure
+    # This aligns the AI output with your Frontend logic (renderMedicineCard)
+    
+    formatted_draft = []
+    
+    # Map AI "Time Strings" to "Time Values" for your checkboxes
+    time_mapping = {
+        "Morning": "08:00",
+        "Afternoon": "13:00",
+        "Evening": "18:00",
+        "Night": "22:00"
+    }
+
+    for item in extracted_data:
+        # Build the 'tod_selection' map that JS uses to check boxes
+        tod_selection = {}
+        ai_times = item.get('times', []) # e.g., ["Morning", "Night"]
+        
+        for t in ai_times:
+            clean_t = t.capitalize()
+            if clean_t in time_mapping:
+                tod_selection[clean_t] = time_mapping[clean_t]
+
+        # Construct the exact object JS expects
+        med_entry = {
+            "medicine": {
+                "name": item.get('name', ''),
+                "dosage": item.get('dosage', ''),
+                "quantity": item.get('quantity', 10),
+                "medium": item.get('medium', 'Tablet'),
+                "food": item.get('food', 'No preference'),
+                "notes": item.get('notes', '')
+            },
+            "schedule": {
+                "start_date": "", # Leave empty for user to pick
+                "duration_days": item.get('duration_days', 7),
+                "days": ["sun", "mon", "tue", "wed", "thu", "fri", "sat"], # Default to daily
+                "times": list(tod_selection.values()), # ["08:00", "22:00"]
+                "tod_selection": tod_selection,        # {"Morning": "08:00", "Night": "22:00"}
+                "quantity_per_dose": item.get('quantity_per_dose', 1),
+                "reminder_enabled": True
+            }
+        }
+        formatted_draft.append(med_entry)
+
+    user_id = session['user']['email']
+    draft_payload = {"medicines": formatted_draft}
+    firebase_service.save_draft(user_id, draft_payload)
+
+    # 5. Tell Frontend to redirect
+    return jsonify({
+        "success": True, 
+        "redirect_url": "/addmedicine" # URL to your add_medicine page
+    })
+
+@app.route('/test-ocr')
+def test_ocr_page():
+    return render_template("test_ocr.html")
 
 
 
