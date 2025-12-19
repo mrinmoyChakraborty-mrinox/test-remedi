@@ -401,6 +401,14 @@ def delete_schedule(schedule_id):
     user_id = session['user']['email']
     firebase_service.delete_schedule(user_id, schedule_id)
     return jsonify({"status": "success"})
+@app.route('/api/prescriptions/delete/<pres_id>')
+def delete_prescription(pres_id):
+    if 'user' not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_id = session['user']['email']
+    firebase_service.delete_prescription(user_id, pres_id)
+    return jsonify({"status": "success"}),200
 
 @app.route("/api/activate", methods=["POST"])
 def activate():
@@ -507,7 +515,7 @@ def fill_from_prescription():
     return jsonify({
         "success": True, 
         "redirect_url": "/addmedicine" # URL to your add_medicine page
-    })
+    }),200
 
 @app.route('/upload-prescription')
 def test_ocr_page():
@@ -542,7 +550,11 @@ def upload_prescription():
     user_id = session['user']['email']
     firebase_service.upload_prescription(user_id,image_url)
     return jsonify({"success":True}), 200
-
+@app.route('/api/prescription/list',methods=['GET'])
+def list_prescriptions():
+    user_id = session['user']['email']
+    prescriptions = firebase_service.list_prescriptions(user_id)
+    return jsonify({"prescriptions": prescriptions})
 
 @app.route('/remove-fcm-token',methods=['GET','POST'])
 def removefcm():

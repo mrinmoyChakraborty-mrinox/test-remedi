@@ -37,7 +37,7 @@ async function uploadPrescription(){
 
         if (response.ok && result.success) {
             console.log("Success:", result);
-            // Redirect to the Add Medicine page (Auto-filled)
+            alert("✅ Prescription uploaded successfully!");
             window.location.href = '/dashboard';
         } else {
             alert("Error: " + (result.error || "Failed to process prescription."));

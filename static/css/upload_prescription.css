@@ -3,16 +3,21 @@
     font-family: Arial, sans-serif;
 }
 
-body {
+/*body {
     background-color: #f2f4f6;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-}
+}*/
 
 .page-container {
     width: 380px;
+    background-color: #f2f4f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 .card {

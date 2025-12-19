@@ -270,7 +270,26 @@ def upload_prescription(user_id,image_url):
         'image_url':image_url,
         'uploaded_at':firestore.SERVER_TIMESTAMP
     })
-
+def list_prescriptions(user_id):
+    try:
+        prescriptions_ref = db.collection('users').document(user_id).collection('prescriptions')
+        prescriptions = prescriptions_ref.stream()
+        result = []
+        for doc in prescriptions:
+            data = doc.to_dict()
+            data['id'] = doc.id
+            result.append(data)
+        return result
+    except Exception as e:
+        print(f"Error listing prescriptions for user {user_id}: {e}")
+        return []            
+def delete_prescription(user_id, pres_id):
+    try:
+        prescription_ref=db.collection('users').document(user_id).collection('prescriptions').document(pres_id)
+        prescription_ref.delete()
+    except Exception as e:
+        print(f"Error deleting prescriptions for user {user_id}: {e}")
+              
 def delete_schedule(user_id, schedule_id):
     
     try:
