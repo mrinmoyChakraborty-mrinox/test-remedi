@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (result.status === 'success') {
                 alert("Great job! Inventory updated.");
-                window.location.href = "/dashboard"; 
+                window.close(); 
             } else {
                 alert("Something went wrong: " + (result.error || "Unknown error"));
                 btnTake.disabled = false;
@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Action: Skip / Go Dashboard
     const goToDashboard = () => {
-        window.location.href = "/dashboard"; 
+        window.close(); 
     };
 
     // 5. Attach Event Listeners
