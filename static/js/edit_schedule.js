@@ -85,9 +85,9 @@ async function saveSchedule() {
     body: JSON.stringify(payload)
   });
 
-  window.location.href = "/view-schedules";
+  window.location.href = "/schedules";
 }
 
 function cancelEdit() {
-  window.location.href = "/view-schedules";
+  window.location.href = "/schedules";
 }
