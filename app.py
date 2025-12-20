@@ -406,7 +406,22 @@ def edit_schedule_page(schedule_id):
         "edit_schedule.html",
         schedule_id=schedule_id,user=session['user']
     )
+@app.route("/api/schedules/get/<schedule_id>",methods=["GET"])
+def get_schedule_for_edit(schedule_id):
+    user_id=session['user']['email']
+    result=firebase_service.get_schedule_for_edit(user_id,schedule_id)
+    return result
+@app.route("/api/schedules/update/<schedule_id>", methods=["POST"])
+def update_schedule(schedule_id):
+    user_id = session['user']['email']
+    data = request.json
 
+    if not data:
+        return {"error": "No data provided"}, 400
+
+    firebase_service.update_schedule(user_id, schedule_id, data)
+
+    return {"status": "schedule_updated"}
 
 
 @app.route("/api/draft/load", methods=["GET"])

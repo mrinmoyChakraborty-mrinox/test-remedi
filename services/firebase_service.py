@@ -391,3 +391,56 @@ def refill_medicine(user_id, data):
     med_ref.update({
         "quantity": firestore.Increment(data["quantity"])
     })
+def get_schedule_for_edit(user_id,schedule_id):
+
+    sched_ref = (
+        db.collection("users")
+        .document(user_id)
+        .collection("schedules")
+        .document(schedule_id)
+    )
+
+    doc = sched_ref.get()
+    if not doc.exists:
+        return jsonify({"error": "Schedule not found"}), 404
+
+    data = doc.to_dict()
+
+    # Return ONLY what edit page needs
+    return jsonify({
+        "quantity_per_dose": data.get("quantity_per_dose", 1),
+        "food": data.get("food", ""),
+        "days": data.get("days", []),
+        "start_date": data.get("start_date"),
+        "duration_days": data.get("duration_days"),
+        "times": data.get("times", []),
+        "tod_selection": data.get("tod_selection", {})
+    })
+def update_schedule(user_id, schedule_id, data):
+    sched_ref = (
+        db.collection("users")
+        .document(user_id)
+        .collection("schedules")
+        .document(schedule_id)
+    )
+    if not sched_ref.get().exists:
+        return jsonify({"error": "Schedule not found"}), 404
+
+    # Clean & validate
+    times = sorted(list(set(data.get("times", []))))
+    tod_selection = data.get("tod_selection", {})
+
+    update_data = {
+        "quantity_per_dose": int(data.get("quantity_per_dose", 1)),
+        "food": data.get("food", ""),
+        "days": data.get("days", []),
+        "start_date": data.get("start_date"),
+        "duration_days": int(data.get("duration_days", 0)),
+        "times": times,
+        "tod_selection": tod_selection,
+        "updated_at": firestore.SERVER_TIMESTAMP
+    }
+
+    sched_ref.update(update_data)
+
+    return jsonify({"status": "updated"})        
