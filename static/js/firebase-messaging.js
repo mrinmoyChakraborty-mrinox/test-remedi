@@ -50,6 +50,7 @@ function showToast(message, payload, type) {
     if (type === "refill") {
       const params = new URLSearchParams({
         medicine_id: payload.medicine_id,
+        schedule_id: payload.schedule_id,
         med_name: payload.med_name,
         remaining: payload.quantity || "0"
       });

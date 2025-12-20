@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
 
-  const medicineId = params.get("medicine_id");
+  const schedule_id = params.get("schedule_id");
   const medName = params.get("med_name");
   const remaining = params.get("remaining");
 
@@ -30,7 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (res.ok) {
       alert("Medicine refilled successfully");
-      window.location.href = "/dashboard";
+      window.close();
+
     } else {
       alert("Failed to refill");
     }
@@ -40,13 +41,14 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector(".skip-btn").onclick = async () => {
     if (!confirm("This will delete the schedule. Continue?")) return;
 
-    const res = await fetch(`/api/medicine/delete/${medicineId}`, {
+    const res = await fetch(`/api/schedules/delete/${schedule_id}`, {
       method: "DELETE"
     });
 
     if (res.ok) {
       alert("Course marked as completed");
-      window.location.href = "/dashboard";
+      window.close();
+
     } else {
       alert("Failed to update");
     }

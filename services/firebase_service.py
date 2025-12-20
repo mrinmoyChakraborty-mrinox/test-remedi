@@ -216,6 +216,7 @@ def run_inventory_transaction(transaction, med_ref, user_id,decrement_quantity,s
             queue_refill_notification(
                 user_id=user_id,
                 quantity=new_qty,
+                sche_id=sched_ref.id,
                 medicine_id=med_ref.id,
                 med_name=med_name,
                 delay_minutes=10
@@ -331,7 +332,7 @@ def get_schedules_by_time(time_str,day):
             valid_docs.append(doc)
             
     return valid_docs
-def queue_refill_notification(user_id,quantity, medicine_id, med_name, delay_minutes=10):
+def queue_refill_notification(user_id,quantity, medicine_id, med_name,sche_id, delay_minutes=10):
     ist = pytz.timezone("Asia/Kolkata")
 
     # 1️⃣ Get IST now
@@ -365,6 +366,7 @@ def queue_refill_notification(user_id,quantity, medicine_id, med_name, delay_min
     queued_ref.add({
         "type": "refill",
         "medicine_id": medicine_id,
+        "schedule_id":sche_id,
         "med_name": med_name,
         "quantity": quantity,
         "scheduled_at": utc_send_time,  # ✅ UTC STORED
