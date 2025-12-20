@@ -383,11 +383,7 @@ def get_due_refill_notifications():
     )
 def refill_medicine(user_id, data):
     med_ref = (
-        firebase_service.db
-        .collection("users")
-        .document(user_id)
-        .collection("medicines")
-        .document(data["medicine_id"])
+        db.collection("users").document(user_id).collection("medicines").document(data["medicine_id"])
     )
 
     med_ref.update({
