@@ -10,26 +10,56 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log("BG payload:", payload);
 
-  const notificationTitle = payload.data.med_name
-    ? "Medicine Reminder"
-    : "Reminder";
+  const type = payload.data.notification_type || "reminder";
 
-  const notificationOptions = {
-    body: `Time to take ${payload.data.med_name} ${payload.data.food}`,
-    icon: "/static/images/titleicon.png",
-    data: payload.data,
-    actions: [
+  let title = "Reminder";
+  let body = "";
+  let actions = [];
+
+  if (type === "refill") {
+    title = "Refill Alert";
+    body = `You are running low on ${payload.data.med_name}`;
+    actions = [
+      { action: "open_refill", title: "🧾 Refill Now" }
+    ];
+  } else {
+    title = "Medicine Reminder";
+    body = `Time to take ${payload.data.med_name} ${payload.data.food || ""}`;
+    actions = [
       { action: "mark_taken", title: "✅ Take Now" },
       { action: "open_page", title: "👀 View Details" }
-    ]
-  };
+    ];
+  }
 
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  self.registration.showNotification(title, {
+    body,
+    icon: "/static/images/titleicon.png",
+    data: payload.data,
+    actions
+  });
 });
 
+
 // 2. HANDLE CLICKS
+
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close(); // Always close the notification first
+  event.notification.close();
+
+  const data = event.notification.data || {};
+  const type = data.notification_type || "reminder";
+    // 🔁 REFILL NOTIFICATION
+  if (type === "refill") {
+    const refillUrl =
+      `/refill-alert?medicine_id=${data.medicine_id}` +
+      `&med_name=${data.med_name}` +
+      `&remaining=${data.quantity || "0"}`;
+
+    event.waitUntil(
+      clients.openWindow(refillUrl)
+    );
+    return; // ⛔ stop further processing
+  }
+
 
   const scheduleId = event.notification.data.schedule_id;
   const userId = event.notification.data.user_id;
