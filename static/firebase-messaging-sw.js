@@ -1,30 +1,37 @@
+/* firebase-messaging-sw.js */
 
-importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
+importScripts("https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js");
 importScripts("/firebase-config.js");
 
+/* Initialize Firebase */
 firebase.initializeApp(self.FIREBASE_CONFIG);
 const messaging = firebase.messaging();
 
-// 1. DISPLAY THE NOTIFICATION (When app is closed)
+/* ================================
+   1️⃣ BACKGROUND MESSAGE HANDLER
+   ================================ */
 messaging.onBackgroundMessage((payload) => {
-  console.log("BG payload:", payload);
+  console.log("🔔 BG payload:", payload);
 
-  const type = payload.data.notification_type || "reminder";
+  // 🚨 IMPORTANT: data-only messages
+  const data = payload.data || {};
+  const type = data.notification_type; // MUST exist
 
-  let title = "Reminder";
-  let body = "";
+  let title;
+  let body;
   let actions = [];
 
   if (type === "refill") {
     title = "Refill Alert";
-    body = `You are running low on ${payload.data.med_name}`;
+    body = `You are running low on ${data.med_name}`;
     actions = [
       { action: "open_refill", title: "🧾 Refill Now" }
     ];
   } else {
+    // DEFAULT → medicine reminder
     title = "Medicine Reminder";
-    body = `Time to take ${payload.data.med_name} ${payload.data.food || ""}`;
+    body = `Time to take ${data.med_name} ${data.food || ""}`;
     actions = [
       { action: "mark_taken", title: "✅ Take Now" },
       { action: "open_page", title: "👀 View Details" }
@@ -34,67 +41,64 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(title, {
     body,
     icon: "/static/images/titleicon.png",
-    data: payload.data,
+    data,          // 🔥 REQUIRED for click handling
     actions
   });
 });
 
-
-// 2. HANDLE CLICKS
-
-self.addEventListener('notificationclick', (event) => {
+/* ================================
+   2️⃣ NOTIFICATION CLICK HANDLER
+   ================================ */
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
   const data = event.notification.data || {};
-  const type = data.notification_type || "reminder";
-    // 🔁 REFILL NOTIFICATION
+  const type = data.notification_type;
+
+  /* 🔁 REFILL FLOW */
   if (type === "refill") {
     const refillUrl =
       `/refill-alert?medicine_id=${data.medicine_id}` +
-      `&med_name=${data.med_name}` +
+      `&med_name=${encodeURIComponent(data.med_name)}` +
       `&remaining=${data.quantity || "0"}`;
 
-    event.waitUntil(
-      clients.openWindow(refillUrl)
-    );
-    return; // ⛔ stop further processing
+    event.waitUntil(clients.openWindow(refillUrl));
+    return;
   }
 
+  /* 💊 MEDICINE REMINDER FLOW */
+  const scheduleId = data.schedule_id;
+  const userId = data.user_id;
+  const medName = data.med_name;
+  const medId = data.med_id;
 
-  const scheduleId = event.notification.data.schedule_id;
-  const userId = event.notification.data.user_id;
-  const medName = event.notification.data.med_name;
-  const medId= event.notification.data.med_id;
-
-  // --- SCENARIO A: User clicked the small "Take Now" button ---
-  if (event.action === 'mark_taken') {
-      const handleQuickTake = async () => {
-          try {
-              // Send request to Python to mark as taken
-              await fetch('/api/mark_taken', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ schedule_id: scheduleId, user_id: userId, med_id: medId })
-              });
-              // Show a quick confirmation notification
-              self.registration.showNotification("Done!", { 
-                  body: `${medName} marked as taken.`, 
-                  icon: '/static/images/tick.png' 
-              });
-          } catch (e) { console.error(e); }
-      };
-      event.waitUntil(handleQuickTake());
-  } 
-  
-  // --- SCENARIO B: User clicked the Body (or "View Details") ---
+  // Action button: Take Now
+  if (event.action === "mark_taken") {
+    event.waitUntil(
+      fetch("/api/mark_taken", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          schedule_id: scheduleId,
+          user_id: userId,
+          med_id: medId
+        })
+      }).then(() =>
+        self.registration.showNotification("Done!", {
+          body: `${medName} marked as taken.`,
+          icon: "/static/images/tick.png"
+        })
+      )
+    );
+  }
+  // Click on body / View Details
   else {
-      // Construct the URL to your special "Notification Action" page
-      // We pass the IDs in the URL so the page knows what to show
-      const actionUrl = `/notification-action?schedule_id=${scheduleId}&user_id=${userId}&med_name=${medName}&food=${event.notification.data.food}`;
-      
-      // Open the browser window
-      event.waitUntil(
-          clients.openWindow(actionUrl)
-      );
+    const actionUrl =
+      `/notification-action?schedule_id=${scheduleId}` +
+      `&user_id=${userId}` +
+      `&med_name=${encodeURIComponent(medName)}` +
+      `&food=${data.food || ""}`;
+
+    event.waitUntil(clients.openWindow(actionUrl));
   }
 });

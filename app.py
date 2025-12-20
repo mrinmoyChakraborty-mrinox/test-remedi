@@ -264,6 +264,7 @@ def process_background_notifications(time_str,day):
                     messages.append(
                         messaging.Message(
                             data={
+                            "notification_type": "reminder",
                             "schedule_id": doc.id,
                             "user_id": user_id,
                             "food": data.get("food",""),
