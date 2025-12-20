@@ -404,7 +404,7 @@ def edit_schedule_page(schedule_id):
 
     return render_template(
         "edit_schedule.html",
-        schedule_id=schedule_id
+        schedule_id=schedule_id,user=session['user']
     )
 
 
