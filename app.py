@@ -127,8 +127,8 @@ def login():
     uid = decoded.get("uid")
 
     # Check / create user document in Firestore (no password)
-    user = firebase_service.get_user(email)
-    if not user:
+    user_data = firebase_service.get_user(email)
+    if not user_data:
         firebase_service.add_user(email=email, username=name)
         user_data = {"email": email, "username": name, "photo_url": decoded.get("picture", "https://ik.imagekit.io/RemediRX/pngwing.com.png?updatedAt=1764494288724"),'fcm_enabled': False}
         
