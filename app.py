@@ -397,6 +397,18 @@ def save_draft():
 
     return {"status": "draft_saved"}
 
+@app.route("/schedule/edit/<schedule_id>")
+def edit_schedule_page(schedule_id):
+    if "user" not in session:
+        return redirect("/getstarted")
+
+    return render_template(
+        "edit_schedule.html",
+        schedule_id=schedule_id
+    )
+
+
+
 @app.route("/api/draft/load", methods=["GET"])
 def load_draft():
     user_id = session['user']['email']

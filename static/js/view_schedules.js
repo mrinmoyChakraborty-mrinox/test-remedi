@@ -37,6 +37,9 @@ async function loadSchedules() {
                     <p><b>Total quantity:</b> ${schedule.quantity || '-'}</p>
                     <p><b> Medium:</b> ${schedule.medium || '-'}</p>
                     <p><b> Food preference:</b> ${schedule.food || '-'}</p>
+                    <button onclick="editSchedule('${schedule.id}')">
+                        ✏️ Edit
+                    </button>
                     <button onclick="deleteSchedule('${schedule.id}')">
                         🗑 Delete
                     </button>
@@ -50,6 +53,9 @@ async function loadSchedules() {
         console.error(error);
         listDiv.innerHTML = "<p>Failed to load schedules.</p>";
     }
+}
+function editSchedule(id) {
+    window.location.href = `/schedule/edit/${id}`;
 }
 
 function toggleDetails(id) {

@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Edit Schedule{% endblock %}
+{% block content %}
+
+  <!-- Reuse your main styles -->
+  <link rel="stylesheet" href="/static/css/style.css">
+
+  <!-- Page Container -->
+  <div class="container" style="max-width: 500px; margin: 40px auto;">
+
+    <h2 style="margin-bottom: 20px;">✏️ Edit Schedule</h2>
+
+    <!-- Hidden schedule id -->
+    <input type="hidden" id="scheduleId" value="{{ schedule_id }}">
+
+    <!-- Quantity per dose -->
+    <label for="quantity_per_dose">Quantity per dose</label>
+    <input
+      type="number"
+      id="quantity_per_dose"
+      min="1"
+      required
+    >
+
+    <!-- Food preference -->
+    <label for="food">Food preference</label>
+    <select id="food">
+      <option value="">-- Select --</option>
+      <option value="before food">Before food</option>
+      <option value="after food">After food</option>
+      <option value="anytime">Anytime</option>
+    </select>
+
+    <!-- Medium -->
+    <label for="medium">Medium</label>
+    <select id="medium">
+      <option value="">-- Select --</option>
+      <option value="water">Water</option>
+      <option value="milk">Milk</option>
+    </select>
+
+    <!-- Buttons -->
+    <div style="margin-top: 25px; display: flex; gap: 12px;">
+      <button onclick="saveSchedule()" class="btn primary">
+        💾 Save Changes
+      </button>
+      <button onclick="cancelEdit()" class="btn secondary">
+        ❌ Cancel
+      </button>
+    </div>
+
+  </div>
+
+  <!-- JS -->
+  <script>
+    document.addEventListener("DOMContentLoaded", async () => {
+      const scheduleId = document.getElementById("scheduleId").value;
+
+      try {
+        const res = await fetch(`/api/schedules/get/${scheduleId}`);
+        const data = await res.json();
+
+        document.getElementById("quantity_per_dose").value =
+          data.quantity_per_dose || "";
+
+        document.getElementById("food").value =
+          data.food || "";
+
+        document.getElementById("medium").value =
+          data.medium || "";
+
+      } catch (err) {
+        alert("Failed to load schedule details");
+      }
+    });
+
+    async function saveSchedule() {
+      const scheduleId = document.getElementById("scheduleId").value;
+
+      const payload = {
+        quantity_per_dose: document.getElementById("quantity_per_dose").value,
+        food: document.getElementById("food").value,
+        medium: document.getElementById("medium").value
+      };
+
+      const res = await fetch(`/api/schedules/update/${scheduleId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert("Schedule updated successfully");
+        window.location.href = "/view-schedules";
+      } else {
+        alert("Failed to update schedule");
+      }
+    }
+
+    function cancelEdit() {
+      window.location.href = "/view-schedules";
+    }
+  </script>
+
+{% endblock %}
