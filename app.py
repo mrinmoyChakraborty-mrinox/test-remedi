@@ -371,7 +371,7 @@ def sw():
 # ---------------- PAGES ----------------
 @app.route("/view-prescription",methods=["GET","POST"])
 def view_prescription():
-    return render_template('view_prescription_copy.html',user=session['user'])
+    return render_template('view_prescription.html',user=session['user'])
 @app.route("/addmedicine",methods=["GET","POST"])
 def add_medicine_page():
     return render_template("add_medicine.html",user=session['user'])
